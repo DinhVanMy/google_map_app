@@ -173,10 +173,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text('Map Screen'),
-      //   centerTitle: true,
-      // ),
+
       body: Stack(
         children: <Widget>[
           FlutterMap(
