@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_map_app/marker_data.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -187,6 +190,55 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
     );
+  }
+
+  //search features
+  Future<void> _searchPlaces(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        // _isSearching = false;
+      });
+      return;
+    }
+
+    final url =
+        'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=5';
+
+    final response = await http.get(Uri.parse(url));
+    final data = json.decode(response.body);
+    if (data.isNotEmpty) {
+      setState(() {
+        _searchResults = data;
+      });
+    } else {
+      setState(() {
+        _searchResults = [];
+      });
+    }
+  }
+
+  //move to specified location
+  void _moveToLocation(double lat, double lon) {
+    LatLng location = LatLng(lat, lon);
+    _mapController.move(location, 9.2);
+    setState(() {
+      _selectedPostion = location;
+      _searchResults = [];
+      _isSearching = false;
+      _searchController.clear();
+    });
+  }
+
+  //initState to add listeners
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    super.initState();
+    _searchController.addListener(() {
+      _searchPlaces(_searchController.text);
+    });
   }
 
   @override
