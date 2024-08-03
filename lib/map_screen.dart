@@ -131,26 +131,6 @@ class _MapScreenState extends State<MapScreen> {
                       labelText: 'Description',
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (titleController.text.isEmpty ||
-                          descController.text.isEmpty) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const AlertDialog(
-                            title: Text('Error'),
-                            content: Text('Please fill in all fields.'),
-                          ),
-                        );
-                        return;
-                      }
-                      _addMarker(
-                          position, titleController.text, descController.text);
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Add'),
-                  ),
                 ],
               ),
               actions: [
@@ -162,12 +142,51 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
+                    if (titleController.text.isEmpty ||
+                        descController.text.isEmpty) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => const AlertDialog(
+                          title: Text('Error'),
+                          content: Text('Please fill in all fields.'),
+                        ),
+                      );
+                      return;
+                    }
+                    _addMarker(
+                        position, titleController.text, descController.text);
                     Navigator.pop(context);
                   },
-                  child: const Text('Ok'),
+                  child: const Text('Save'),
                 ),
               ],
             ));
+  }
+
+  //show marker information when tapped
+  void showMarkerInfo(MarkerData markerData) {
+    const url = "https://docs.fleaflet.dev/";
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(markerData.title),
+        content: Text(markerData.description),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              launchUrl(Uri.parse(url));
+            },
+            child: const Text('Visit Website'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

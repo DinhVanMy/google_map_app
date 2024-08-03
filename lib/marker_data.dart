@@ -4,7 +4,7 @@ class MarkerData {
   final LatLng position;
   final String title;
   final String description;
-  
+
   const MarkerData({
     required this.position,
     required this.title,
