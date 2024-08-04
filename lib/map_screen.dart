@@ -75,7 +75,9 @@ class _MapScreenState extends State<MapScreen> {
           width: 80,
           height: 80,
           child: GestureDetector(
-            onTap: () {},
+            onTap: () {
+              showMarkerInfo(markerData);
+            },
             child: Column(
               children: [
                 Container(
@@ -252,8 +254,10 @@ class _MapScreenState extends State<MapScreen> {
               initialCenter: const LatLng(21.028511, 105.804817),
               initialZoom: 9.2,
               onTap: (tapPosition, latLng) {
-                _selectedPostion = latLng;
-                _draggedPosition = _selectedPostion;
+                setState(() {
+                  _selectedPostion = latLng;
+                  _draggedPosition = _selectedPostion;
+                });
               },
             ),
             children: [
@@ -392,6 +396,70 @@ class _MapScreenState extends State<MapScreen> {
                           },
                         );
                       },
+                    ),
+                  )
+              ],
+            ),
+          ),
+          //add location button
+          _isDragging == false
+              ? Positioned(
+                  bottom: 20,
+                  left: 20,
+                  child: FloatingActionButton(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.indigo,
+                    onPressed: () {
+                      setState(() {
+                        _isDragging = true;
+                      });
+                    },
+                    child: const Icon(Icons.add_location),
+                  ),
+                )
+              : Positioned(
+                  bottom: 20,
+                  left: 20,
+                  child: FloatingActionButton(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.redAccent,
+                    onPressed: () {
+                      setState(() {
+                        _isDragging = false;
+                      });
+                    },
+                    child: const Icon(Icons.wrong_location_outlined),
+                  ),
+                ),
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: Column(
+              children: [
+                FloatingActionButton(
+                  foregroundColor: Colors.indigo,
+                  backgroundColor: Colors.white,
+                  onPressed: () {
+                    _showCurrentLocation();
+                  },
+                  child: const Icon(Icons.location_searching_rounded),
+                ),
+                if (_isDragging)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: FloatingActionButton(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                      onPressed: () {
+                        if (_draggedPosition != null) {
+                          _showMarkerDialog(context, _draggedPosition!);
+                        }
+                        setState(() {
+                          _isDragging = false;
+                          _draggedPosition = null;
+                        });
+                      },
+                      child: const Icon(Icons.check),
                     ),
                   )
               ],
