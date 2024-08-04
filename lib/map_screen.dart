@@ -248,26 +248,155 @@ class _MapScreenState extends State<MapScreen> {
         children: <Widget>[
           FlutterMap(
             mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: LatLng(21.028511, 105.804817),
+            options: MapOptions(
+              initialCenter: const LatLng(21.028511, 105.804817),
               initialZoom: 9.2,
+              onTap: (tapPosition, latLng) {
+                _selectedPostion = latLng;
+                _draggedPosition = _selectedPostion;
+              },
             ),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.app',
               ),
-              RichAttributionWidget(
-                attributions: [
-                  TextSourceAttribution(
-                    'OpenStreetMap contributors',
-                    onTap: () => launchUrl(
-                        Uri.parse('https://openstreetmap.org/copyright')),
-                  ),
-                ],
-              )
+              MarkerLayer(markers: _markers),
+              if (_isDragging && _draggedPosition != null)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _draggedPosition!,
+                      width: 80,
+                      height: 80,
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: const [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 2)),
+                            ],
+                          ),
+                          child: const Text(
+                            'Dragging Marker',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              if (_mylocation != null)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _mylocation!,
+                      width: 80,
+                      height: 80,
+                      child: GestureDetector(
+                        onTap: () {
+                          _moveToLocation(
+                              _mylocation!.latitude, _mylocation!.longitude);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: const [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 2)),
+                            ],
+                          ),
+                          child: const Text(
+                            'My Location',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
             ],
-          )
+          ),
+          Positioned(
+            top: 40,
+            left: 15,
+            right: 15,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 55,
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                        hintText: "Search Place...",
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _isSearching
+                            ? IconButton(
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _isSearching = false;
+                                    _searchResults = [];
+                                  });
+                                },
+                                icon: const Icon(Icons.clear))
+                            : null),
+                    onTap: () {
+                      setState(() {
+                        _isSearching = true;
+                      });
+                    },
+                  ),
+                ),
+                if (_isSearching && _searchResults.isNotEmpty)
+                  Container(
+                    color: Colors.white,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, index) {
+                        final place = _searchResults[index];
+                        return ListTile(
+                          title: Text(
+                            place['display_name'],
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                          onTap: () {
+                            final lat = double.parse(place['lat']);
+                            final lon = double.parse(place['lon']);
+                            _moveToLocation(lat, lon);
+                          },
+                        );
+                      },
+                    ),
+                  )
+              ],
+            ),
+          ),
         ],
       ),
     );
